@@ -65,12 +65,12 @@ export const getClassCounts = (predictions: cocoSsd.DetectedObject[]) => {
     countsObj[pred.class] = val + 1;
   });
 
-  const counts: any[] = [];
+  const countsArr: any[] = [];
   for (const [key, value] of Object.entries(countsObj)) {
-    counts.push({ class: key, count: value });
+    countsArr.push({ class: key, count: value });
   }
 
-  counts.sort(function (a, b) {
+  countsArr.sort(function (a, b) {
     const na = a.count;
     const nb = b.count;
     if (na < nb) return 1;
@@ -78,7 +78,7 @@ export const getClassCounts = (predictions: cocoSsd.DetectedObject[]) => {
     return 0;
   });
 
-  return counts;
+  return { countsObj, countsArr };
 };
 
 export function annotateImage(

@@ -48,10 +48,10 @@ app.post("/upload", upload.single("img"), async (req, res, next) => {
       throw new Error("No model loaded");
     }
     const predictions = await predict(imageBitmap, global.model);
-    const counts = getClassCounts(predictions);
+    const { countsArr, countsObj } = getClassCounts(predictions);
     annotateImage(imageBitmap, predictions);
     const imageURL = await writeImageFile(imageBitmap);
-    res.json({ predictions, imageURL, counts });
+    res.json({ predictions, imageURL, countsArr, countsObj });
   } catch (err) {
     next(err);
   }
@@ -63,10 +63,10 @@ app.post("/upload_base64", async (req, res, next) => {
     const imageEncoded = req.body.imageEncoded ?? "";
     const imageBitmap = await readImageEncoded(imageEncoded);
     const predictions = await predict(imageBitmap, global.model);
-    const counts = getClassCounts(predictions);
+    const { countsArr, countsObj } = getClassCounts(predictions);
     annotateImage(imageBitmap, predictions);
     const imageURL = await writeImageFile(imageBitmap);
-    res.json({ predictions, imageURL, counts });
+    res.json({ predictions, imageURL, countsArr, countsObj });
   } catch (err) {
     next(err);
   }
