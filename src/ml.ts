@@ -25,7 +25,8 @@ export async function loadModel(global: any) {
   await tf.ready();
   const modelUrl = `http://localhost:${PORT}/static/coco-ssd/model.json`;
   const model = await cocoSsd.load({
-    base: "lite_mobilenet_v2", //fastest
+    base: "lite_mobilenet_v2", //Fastest
+    // base: "mobilenet_v2", // Default
     modelUrl: modelUrl,
   });
   global.model = model;
