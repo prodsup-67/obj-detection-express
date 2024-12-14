@@ -1,6 +1,8 @@
-import tf from "@tensorflow/tfjs";
+import debug from "debug";
+// import tf from "@tensorflow/tfjs";
+const tf = require("@tensorflow/tfjs");
+require("@tensorflow/tfjs-node");
 import * as cocoSsd from "@tensorflow-models/coco-ssd";
-
 import "dotenv/config";
 import fs from "fs";
 // @ts-ignore
@@ -8,7 +10,9 @@ import * as PImage from "pureimage";
 import sharp from "sharp";
 import { Readable } from "stream";
 import promisify from "util.promisify";
+import { PORT } from "./utils/env";
 
+const logger = debug("myapp");
 const readFile = promisify(fs.readFile);
 
 const font = PImage.registerFont(
@@ -19,8 +23,10 @@ font.loadSync();
 
 export async function loadModel(global: any) {
   await tf.ready();
-  const model = await cocoSsd.load();
+  const modelUrl = `http://localhost:${PORT}/static/coco-ssd/model.json`;
+  const model = await cocoSsd.load({ modelUrl: modelUrl });
   global.model = model;
+  logger("Load model successfully");
 }
 
 export const bufferToStream = (binary: Buffer) => {

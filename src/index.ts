@@ -39,7 +39,7 @@ app.get("/load", async (req, res, next) => {
 
 app.post("/upload", upload.single("img"), async (req, res, next) => {
   try {
-    // const model = await loadModel();
+    if (!global.model) await loadModel(global);
     const contentType = req.file?.mimetype ?? "";
     const filePath = req.file?.path ?? "";
     const imageBitmap = await readImageFile(filePath, contentType);
@@ -58,6 +58,7 @@ app.post("/upload", upload.single("img"), async (req, res, next) => {
 
 app.post("/upload_base64", async (req, res, next) => {
   try {
+    if (!global.model) await loadModel(global);
     const imageEncoded = req.body.imageEncoded ?? "";
     const imageBitmap = await readImageEncoded(imageEncoded);
     const predictions = await predict(imageBitmap, global.model);
@@ -82,9 +83,12 @@ const jsonErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
 };
 app.use(jsonErrorHandler);
 
+app.on("mount", () => {
+  logger("Here");
+});
+
 // Running app
-loadModel(global).then(() => {
-  app.listen(PORT, async () => {
-    logger(`Listening on port ${PORT}: http://localhost:${PORT}`);
-  });
+app.listen(PORT, async () => {
+  logger(`Listening on port ${PORT}: http://localhost:${PORT}`);
+  await loadModel(global);
 });
