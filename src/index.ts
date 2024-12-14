@@ -13,7 +13,7 @@ import {
   readImageEncoded,
   getClassCounts,
 } from "./ml.js";
-import { PORT, SERVER_URL } from "./utils/env.js";
+import { PORT } from "./utils/env.js";
 
 let global: { model: any } = { model: null };
 const logger = debug("myapp");
