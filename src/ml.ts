@@ -125,11 +125,13 @@ function drawBox(prediction: cocoSsd.DetectedObject, ctx: any) {
 }
 
 export async function writeImageFile(imageBitmap: any) {
+  // Remove all png files in the public folder
   const files = await readDirFile("public");
   const filesPng = files.filter((f) => f.includes(".png"));
   for (const file of filesPng) {
     await unlinkFile(`public/${file}`);
   }
+  // Write a new file
   const timestamp = new Date().getTime();
   const filename = `output_${timestamp}.png`;
   const imageURL = `${SERVER_URL}/static/${filename}`;
@@ -139,6 +141,7 @@ export async function writeImageFile(imageBitmap: any) {
   );
   return imageURL;
 }
+
 export async function readImageEncoded(imageEncoded: string) {
   let buffer = Buffer.from(imageEncoded, "base64");
   let bufferPNG = await sharp(buffer).toFormat("png").toBuffer();
