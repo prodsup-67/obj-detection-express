@@ -1,7 +1,5 @@
 import debug from "debug";
-// import tf from "@tensorflow/tfjs";
-const tf = require("@tensorflow/tfjs");
-require("@tensorflow/tfjs-node");
+import tf from "@tensorflow/tfjs";
 import * as cocoSsd from "@tensorflow-models/coco-ssd";
 import "dotenv/config";
 import fs from "fs";
