@@ -11,8 +11,9 @@ import {
   annotateImage,
   writeImageFile,
   readImageEncoded,
+  getClassCounts,
 } from "./ml.js";
-import { PORT } from "./utils/env.js";
+import { PORT, SERVER_URL } from "./utils/env.js";
 
 let global: { model: any } = { model: null };
 const logger = debug("myapp");
@@ -47,10 +48,13 @@ app.post("/upload", upload.single("img"), async (req, res, next) => {
       throw new Error("No model loaded");
     }
     const predictions = await predict(imageBitmap, global.model);
-    logger(predictions);
+    const counts = getClassCounts(predictions);
     annotateImage(imageBitmap, predictions);
-    writeImageFile(imageBitmap, "public/output.png");
-    res.json({ predictions });
+    const timestamp = new Date().getTime();
+    const filename = `output_${timestamp}.png`;
+    const imageURL = `${SERVER_URL}/static/${filename}`;
+    writeImageFile(imageBitmap, `public/${filename}`);
+    res.json({ predictions, imageURL, counts });
   } catch (err) {
     next(err);
   }
@@ -62,12 +66,13 @@ app.post("/upload_base64", async (req, res, next) => {
     const imageEncoded = req.body.imageEncoded ?? "";
     const imageBitmap = await readImageEncoded(imageEncoded);
     const predictions = await predict(imageBitmap, global.model);
+    const counts = getClassCounts(predictions);
     annotateImage(imageBitmap, predictions);
     const timestamp = new Date().getTime();
     const filename = `output_${timestamp}.png`;
+    const imageURL = `${SERVER_URL}/static/${filename}`;
     writeImageFile(imageBitmap, `public/${filename}`);
-    logger(predictions);
-    res.json({ predictions, image: filename });
+    res.json({ predictions, imageURL, counts });
   } catch (err) {
     next(err);
   }

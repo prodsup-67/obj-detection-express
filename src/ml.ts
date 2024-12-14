@@ -22,7 +22,10 @@ font.loadSync();
 export async function loadModel(global: any) {
   await tf.ready();
   const modelUrl = `http://localhost:${PORT}/static/coco-ssd/model.json`;
-  const model = await cocoSsd.load({ modelUrl: modelUrl });
+  const model = await cocoSsd.load({
+    base: "lite_mobilenet_v2", //fastest
+    modelUrl: modelUrl,
+  });
   global.model = model;
   logger("Load model successfully");
 }
@@ -50,6 +53,16 @@ export async function readImageFile(filePath: string, contentType: string) {
 export const predict = async (imageBitmap: any, model: any) => {
   const predictions = await model.detect(imageBitmap);
   return predictions as cocoSsd.DetectedObject[];
+};
+
+export const getClassCounts = (predictions: cocoSsd.DetectedObject[]) => {
+  const counts = {} as any;
+
+  predictions.forEach((pred) => {
+    const val = counts?.[pred.class] ?? 0;
+    counts[pred.class] = val + 1;
+  });
+  return counts;
 };
 
 export function annotateImage(
