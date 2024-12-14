@@ -9,10 +9,7 @@ import sharp from "sharp";
 import { Readable } from "stream";
 import promisify from "util.promisify";
 
-import { SERVER_URL } from "./utils/env";
-
 const readFile = promisify(fs.readFile);
-const writeFile = promisify(fs.writeFile);
 
 const font = PImage.registerFont(
   "src/utils/fonts/NotoSans-Medium.ttf",
@@ -39,7 +36,8 @@ export const bufferToStream = (binary: Buffer) => {
 
 export async function readImageFile(filePath: string, contentType: string) {
   let buffer = await readFile(filePath);
-  let bufferPNG = await sharp(buffer).resize(500).toFormat("png").toBuffer();
+  let bufferPNG = await sharp(buffer).resize(300).toFormat("png").toBuffer();
+  // let bufferPNG = await sharp(buffer).toFormat("png").toBuffer();
   const stream = bufferToStream(bufferPNG);
   const imageBitmap = await PImage.decodePNGFromStream(stream);
   return imageBitmap;
@@ -75,7 +73,7 @@ function drawBox(prediction: cocoSsd.DetectedObject, ctx: any) {
   let bboxHeight = prediction.bbox[3]; // - bboxTop;
 
   ctx.beginPath();
-  ctx.font = "20px NotoSans";
+  ctx.font = "12px NotoSans";
   ctx.fillStyle = "red";
 
   ctx.fillText(
@@ -95,10 +93,10 @@ function drawBox(prediction: cocoSsd.DetectedObject, ctx: any) {
 export async function writeImageFile(imageBitmap: any, filePath: string) {
   await PImage.encodePNGToStream(imageBitmap, fs.createWriteStream(filePath));
 }
-// export async function readImageEncoded(imageEncoded: string) {
-//   let buffer = Buffer.from(imageEncoded, "base64");
-//   let bufferPNG = await sharp(buffer).toFormat("png").toBuffer();
-//   const stream = bufferToStream(bufferPNG);
-//   const imageBitmap = await PImage.decodePNGFromStream(stream);
-//   return imageBitmap;
-// }
+export async function readImageEncoded(imageEncoded: string) {
+  let buffer = Buffer.from(imageEncoded, "base64");
+  let bufferPNG = await sharp(buffer).toFormat("png").toBuffer();
+  const stream = bufferToStream(bufferPNG);
+  const imageBitmap = await PImage.decodePNGFromStream(stream);
+  return imageBitmap;
+}

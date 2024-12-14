@@ -10,6 +10,7 @@ import {
   predict,
   annotateImage,
   writeImageFile,
+  readImageEncoded,
 } from "./ml.js";
 import { PORT } from "./utils/env.js";
 
@@ -46,6 +47,7 @@ app.post("/upload", upload.single("img"), async (req, res, next) => {
       throw new Error("No model loaded");
     }
     const predictions = await predict(imageBitmap, global.model);
+    logger(predictions);
     annotateImage(imageBitmap, predictions);
     writeImageFile(imageBitmap, "public/output.png");
     res.json({ predictions });
@@ -54,18 +56,19 @@ app.post("/upload", upload.single("img"), async (req, res, next) => {
   }
 });
 
-// app.post("/upload_base64", async (req, res, next) => {
-//   try {
-//     const { model, classes } = await loadModel();
-//     const imageEncoded = req.body.imageEncoded ?? "";
-//     const imageBitmap = await readImageEncoded(imageEncoded);
-//     const predictions = await predict(imageBitmap, model, classes);
-//     logger(predictions);
-//     res.json({ predictions });
-//   } catch (err) {
-//     next(err);
-//   }
-// });
+app.post("/upload_base64", async (req, res, next) => {
+  try {
+    const imageEncoded = req.body.imageEncoded ?? "";
+    const imageBitmap = await readImageEncoded(imageEncoded);
+    const predictions = await predict(imageBitmap, global.model);
+    annotateImage(imageBitmap, predictions);
+    writeImageFile(imageBitmap, "public/output.png");
+    logger(predictions);
+    res.json({ predictions });
+  } catch (err) {
+    next(err);
+  }
+});
 
 // JSON Error Middleware
 const jsonErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
@@ -74,12 +77,7 @@ const jsonErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   serializedError = serializedError.replace(/\\+/g, "/");
   res.status(500).send({
     error: serializedError,
-    predictions: [
-      {
-        class: "ERROR",
-        score: 1,
-      },
-    ],
+    predictions: [],
   });
 };
 app.use(jsonErrorHandler);
