@@ -63,9 +63,11 @@ app.post("/upload_base64", async (req, res, next) => {
     const imageBitmap = await readImageEncoded(imageEncoded);
     const predictions = await predict(imageBitmap, global.model);
     annotateImage(imageBitmap, predictions);
-    writeImageFile(imageBitmap, "public/output.png");
+    const timestamp = new Date().getTime();
+    const filename = `output_${timestamp}.png`;
+    writeImageFile(imageBitmap, `public/${filename}`);
     logger(predictions);
-    res.json({ predictions });
+    res.json({ predictions, image: filename });
   } catch (err) {
     next(err);
   }
