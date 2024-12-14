@@ -50,10 +50,7 @@ app.post("/upload", upload.single("img"), async (req, res, next) => {
     const predictions = await predict(imageBitmap, global.model);
     const counts = getClassCounts(predictions);
     annotateImage(imageBitmap, predictions);
-    const timestamp = new Date().getTime();
-    const filename = `output_${timestamp}.png`;
-    const imageURL = `${SERVER_URL}/static/${filename}`;
-    writeImageFile(imageBitmap, `public/${filename}`);
+    const imageURL = await writeImageFile(imageBitmap);
     res.json({ predictions, imageURL, counts });
   } catch (err) {
     next(err);
@@ -68,10 +65,7 @@ app.post("/upload_base64", async (req, res, next) => {
     const predictions = await predict(imageBitmap, global.model);
     const counts = getClassCounts(predictions);
     annotateImage(imageBitmap, predictions);
-    const timestamp = new Date().getTime();
-    const filename = `output_${timestamp}.png`;
-    const imageURL = `${SERVER_URL}/static/${filename}`;
-    writeImageFile(imageBitmap, `public/${filename}`);
+    const imageURL = await writeImageFile(imageBitmap);
     res.json({ predictions, imageURL, counts });
   } catch (err) {
     next(err);

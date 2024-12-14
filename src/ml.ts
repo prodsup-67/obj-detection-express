@@ -8,10 +8,12 @@ import * as PImage from "pureimage";
 import sharp from "sharp";
 import { Readable } from "stream";
 import promisify from "util.promisify";
-import { PORT } from "./utils/env";
+import { PORT, SERVER_URL } from "./utils/env";
 
 const logger = debug("myapp");
 const readFile = promisify(fs.readFile);
+const unlinkFile = promisify(fs.unlink);
+const readDirFile = promisify(fs.readdir);
 
 const font = PImage.registerFont(
   "src/utils/fonts/NotoSans-Medium.ttf",
@@ -56,12 +58,26 @@ export const predict = async (imageBitmap: any, model: any) => {
 };
 
 export const getClassCounts = (predictions: cocoSsd.DetectedObject[]) => {
-  const counts = {} as any;
+  const countsObj = {} as any;
 
   predictions.forEach((pred) => {
-    const val = counts?.[pred.class] ?? 0;
-    counts[pred.class] = val + 1;
+    const val = countsObj?.[pred.class] ?? 0;
+    countsObj[pred.class] = val + 1;
   });
+
+  const counts: any[] = [];
+  for (const [key, value] of Object.entries(countsObj)) {
+    counts.push({ class: key, count: value });
+  }
+
+  counts.sort(function (a, b) {
+    const na = a.count;
+    const nb = b.count;
+    if (na < nb) return 1;
+    if (nb > na) return -1;
+    return 0;
+  });
+
   return counts;
 };
 
@@ -107,8 +123,20 @@ function drawBox(prediction: cocoSsd.DetectedObject, ctx: any) {
   ctx.fill();
 }
 
-export async function writeImageFile(imageBitmap: any, filePath: string) {
-  await PImage.encodePNGToStream(imageBitmap, fs.createWriteStream(filePath));
+export async function writeImageFile(imageBitmap: any) {
+  const files = await readDirFile("public");
+  const filesPng = files.filter((f) => f.includes(".png"));
+  for (const file of filesPng) {
+    await unlinkFile(`public/${file}`);
+  }
+  const timestamp = new Date().getTime();
+  const filename = `output_${timestamp}.png`;
+  const imageURL = `${SERVER_URL}/static/${filename}`;
+  await PImage.encodePNGToStream(
+    imageBitmap,
+    fs.createWriteStream(`public/${filename}`)
+  );
+  return imageURL;
 }
 export async function readImageEncoded(imageEncoded: string) {
   let buffer = Buffer.from(imageEncoded, "base64");
